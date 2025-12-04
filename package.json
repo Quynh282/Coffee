@@ -17,5 +17,12 @@
   "bugs": {
     "url": "https://github.com/Quynh282/Coffee/issues"
   },
-  "homepage": "https://github.com/Quynh282/Coffee#readme"
+  "homepage": "https://github.com/Quynh282/Coffee#readme",
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "eslint": "^9.39.1",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^16.5.0",
+    "prettier": "^3.7.4"
+  }
 }
