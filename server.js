@@ -7,5 +7,5 @@ app.listen(port, (error) => {
         console.error(`Error starting server: ${error}`);
         throw error;
     }
-    console.log(`Server is running on port ${port}.`);
+    console.log(`Server is running on http://localhost:3000`);
 });
