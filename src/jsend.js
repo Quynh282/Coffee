@@ -1,3 +1,7 @@
+/**
+ * @param {object | null} data 
+ * @returns {{status: 'success', data: object | null}}
+ */
 function success(data = null) {
     return {
         status: "success",
@@ -5,20 +9,48 @@ function success(data = null) {
     };
 }
 
+/**
+ * @param {string} message 
+ * @param {object | null} [data] 
+ * @returns {{status: 'fail',message: string, data: object | undefined}}
+ */
 function fail(message, data = null) {
+    if (data) {
+        return {
+            status: "fail",
+            message,
+            data
+        };
+    }
+
     return {
-        status: "fail",
+        status: 'fail',
         message,
-        data
     };
 }
 
+/**
+ * @param {string} message 
+ * @param {object | null} [data] 
+ * @returns {{status: 'error',message: string, data: object | undefined}}
+ */
 function error(message, data = null) {
+    if (data) {
+        return {
+            status: "error",
+            message,
+            data
+        };
+    }
+
     return {
-        status: "error",
+        status: 'error',
         message,
-        data
     };
 }
 
-module.exports = { success, fail, error };
+module.exports = { 
+    success, 
+    fail, 
+    error, 
+};
