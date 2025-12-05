@@ -18,6 +18,7 @@ app.get('/', (req, res) => {
     return res.json(JSend.success({ message: 'Coffee API OK' }));
 });
 
+app.use('/public', express.static('public'));
 productsRouter.setup(app);
 
 app.use(resourceNotFound);
