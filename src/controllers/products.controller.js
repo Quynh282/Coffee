@@ -1,88 +1,85 @@
 const JSend = require('../jsend');
+const ApiError = require('../api-error');
+const productsService = require('../services/products.service');
+const Paginator = require('../services/paginator');
 
-let products = [];
-let nextId = 1;
+async function createProduct(req, res, next) {
+    try {
+        const payload = {
+            ...req.body,
+            avatar: req.file ? `/public/uploads/${req.file.filename}` : null
+        };
 
-function createProduct(req, res) {
-    const body = req.body;
-
-    const newProduct = {
-        id: nextId++,
-        name: body.name || "",
-        price: body.price || 0,
-        description: body.description || "",
-        favorite: !!body.favorite,
-        avatar: body.avatar || null,
-        origin: body.origin || { farm: "", region: "", batch: "" },
-        createdAt: new Date().toISOString()
-    };
-
-    products.push(newProduct);
-
-    return res.status(201).json(JSend.success({ product: newProduct }));
-}
-
-function getProductsByFilter(req, res) {
-    let result = [...products];
-    const { favorite, name } = req.query;
-
-    if (favorite !== undefined) {
-        const favBool = favorite === 'true';
-        result = result.filter(p => p.favorite === favBool);
+        const product = await productsService.createProduct(payload);
+        res.status(201).json(JSend.success({ product }));
+    } catch (err) {
+        next(err);
     }
+}
 
-    if (name) {
-        result = result.filter(p =>
-            p.name.toLowerCase().includes(name.toLowerCase())
-        );
+async function getProducts(req, res, next) {
+    try {
+        const paginator = new Paginator(req.query.page, req.query.limit);
+        const result = await productsService.getProducts(req.query, paginator);
+        res.json(JSend.success(result));
+    } catch (err) {
+        next(err);
     }
-
-    return res.json(JSend.success({ products: result }));
 }
 
-function getProduct(req, res) {
-    const id = Number(req.params.id);
-    const found = products.find(p => p.id === id);
-
-    if (!found) return res.status(404).json(JSend.fail('Product not found'));
-
-    return res.json(JSend.success({ product: found }));
+async function getProduct(req, res, next) {
+    try {
+        const product = await productsService.getProductById(req.params.id);
+        if (!product) throw new ApiError(404, "Product not found");
+        res.json(JSend.success({ product }));
+    } catch (err) {
+        next(err);
+    }
 }
 
-function updateProduct(req, res) {
-    const id = Number(req.params.id);
-    const product = products.find(p => p.id === id);
+async function updateProduct(req, res, next) {
+    try {
+        const payload = {
+            ...req.body,
+            avatar: req.file ? `/public/uploads/${req.file.filename}` : undefined
+        };
 
-    if (!product) return res.status(404).json(JSend.fail('Product not found'));
+        const exists = await productsService.getProductById(req.params.id);
+        if (!exists) throw new ApiError(404, "Product not found");
 
-    const body = req.body;
-    Object.assign(product, body);
-
-    return res.json(JSend.success({ product }));
+        const product = await productsService.updateProduct(req.params.id, payload);
+        res.json(JSend.success({ product }));
+    } catch (err) {
+        next(err);
+    }
 }
 
-function deleteProduct(req, res) {
-    const id = Number(req.params.id);
-    const index = products.findIndex(p => p.id === id);
+async function deleteProduct(req, res, next) {
+    try {
+        const exists = await productsService.getProductById(req.params.id);
+        if (!exists) throw new ApiError(404, "Product not found");
 
-    if (index === -1) return res.status(404).json(JSend.fail('Product not found'));
-
-    products.splice(index, 1);
-
-    return res.json(JSend.success({ message: "Product deleted" }));
+        await productsService.deleteProduct(req.params.id);
+        res.json(JSend.success({ message: "Product deleted" }));
+    } catch (err) {
+        next(err);
+    }
 }
 
-function deleteAllProducts(req, res) {
-    products = [];
-    nextId = 1;
-    return res.json(JSend.success({ message: 'All products deleted' }));
+async function deleteAllProducts(req, res, next) {
+    try {
+        await productsService.deleteAll();
+        res.json(JSend.success({ message: "All products deleted" }));
+    } catch (err) {
+        next(err);
+    }
 }
 
 module.exports = {
     createProduct,
-    getProductsByFilter,
+    getProducts,
     getProduct,
     updateProduct,
     deleteProduct,
-    deleteAllProducts,
+    deleteAllProducts
 };
